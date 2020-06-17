@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
 set -eo pipefail; [[ $RELEASE_TRACE ]] && set -x
 
-PACKAGE_NAME='github-backup'
-INIT_PACKAGE_NAME='github_backup'
+if [[ ! -f setup.py ]]; then
+  echo -e "${RED}WARNING: Missing setup.py${COLOR_OFF}\n"
+  exit 1
+fi
+
+PACKAGE_NAME="$(cat setup.py | grep "name='" | head | cut -d "'" -f2)"
+INIT_PACKAGE_NAME="$(echo "${PACKAGE_NAME//-/_}")"
 PUBLIC="true"
 
 # Colors
@@ -34,7 +39,7 @@ fi
 echo -e "\n${GREEN}STARTING RELEASE PROCESS${COLOR_OFF}\n"
 
 set +e;
-git status | grep "working directory clean" &> /dev/null
+git status | grep -Eo "working (directory|tree) clean" &> /dev/null
 if [ ! $? -eq 0 ]; then # working directory is NOT clean
     echo -e "${RED}WARNING: You have uncomitted changes, you may have forgotten something${COLOR_OFF}\n"
     exit 1
